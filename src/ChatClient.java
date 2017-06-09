@@ -10,15 +10,19 @@ public class ChatClient implements Runnable{
    private String nomeUsuario;
    private Socket cliente;   
    private String ip = "192.168.0.195";
-   private int porta = 80;
+   private int porta = 123;
    private TelaCliente tela;
    
    public ChatClient(TelaCliente tela, String nomeUsuario){
       this.tela = (TelaCliente)tela;
       this.nomeUsuario = nomeUsuario;
       try {
-         this.cliente = new Socket(ip, porta);      
+         this.cliente = new Socket(ip, porta);
          this.tela.jlInfo.setText("Conectado");
+         Mensagem msg = new Mensagem();
+         msg.setAutenticacao(true);
+         msg.setRemetente(nomeUsuario);
+         enviarMsg(msg);
       } catch (IOException ex) {
          System.out.println(ex.getMessage());
       }
@@ -32,6 +36,10 @@ public class ChatClient implements Runnable{
       this.nomeUsuario = nomeUsuario;
       try {
          this.cliente = new Socket(ip, porta);      
+         Mensagem msg = new Mensagem();
+         msg.setAutenticacao(true);
+         msg.setRemetente(nomeUsuario);
+         enviarMsg(msg);
          System.out.println("Socket criado");
          
       } catch (IOException ex) {
@@ -59,13 +67,13 @@ public class ChatClient implements Runnable{
       }
    }
    
-   public void enviarMsg(Mensagem msg){
+   public final void enviarMsg(Mensagem msg){
       ObjectOutputStream saida;
       try {
          saida = new ObjectOutputStream(cliente.getOutputStream());
          saida.flush();
          saida.writeObject(msg);
-         if(this.tela!=null){
+         if(this.tela!=null && !msg.isAutenticacao()){
             this.tela.taHistorico.setText(this.tela.taHistorico.getText()+"Eu: "+msg.getMsg()+"\n");
          }
       } catch (IOException ex) {
